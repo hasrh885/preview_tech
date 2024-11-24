@@ -3,7 +3,6 @@ import 'package:denomination/resources/color.dart';
 import 'package:denomination/screen/history/controller/history_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:share_plus/share_plus.dart';
 
 class HistoryView extends GetView<HistoryController> {
   HistoryView({super.key});
