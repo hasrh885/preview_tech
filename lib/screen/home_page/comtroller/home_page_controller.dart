@@ -27,17 +27,9 @@ class HomePageController extends GetxController{
   RxString currentItem = "General 1".obs;
 
 
-
-  final double maxHeaderHeight = 100;
-  late ScrollController scrollController;
-  double opacity = 1.0;
-
   @override
   void onInit() {
     super.onInit();
-
-    scrollController = ScrollController();
-    scrollController.addListener(updateHeaderState);
 
     totalSum.value = 0;
     inputControllers.clear();
@@ -63,17 +55,6 @@ class HomePageController extends GetxController{
 
   }
 
-  void updateHeaderState() {
-    final offset = scrollController.offset;
-
-    if (offset > 0 && offset <= maxHeaderHeight) {
-      opacity = 1 - (offset / maxHeaderHeight).clamp(0, 1);
-    } else if (offset > maxHeaderHeight) {
-      opacity = 0;
-    } else {
-      opacity = 1;
-    }
-  }
 
   clearInput(index){
     total[index] = "0";
@@ -99,6 +80,8 @@ class HomePageController extends GetxController{
       return acc + (parsedValue ?? 0);
     });
     print(total);
+    print(totalSum.value);
+    update();
   }
 
   storeData() async {
@@ -136,6 +119,7 @@ class HomePageController extends GetxController{
 
     // Save the updated list to storage
     await storage.save(key: "list", value: jsonEncode(body));
+    clearAll();
   }
 
   changeDropDownValue(value){

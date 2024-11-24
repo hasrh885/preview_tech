@@ -18,7 +18,6 @@ class HomePageView extends GetView<HomePageController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        controller: controller.scrollController,
         child: Column(
           children: [
             Obx(
@@ -95,7 +94,7 @@ class HomePageView extends GetView<HomePageController> {
                   itemCount: controller.list.length,
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    return MultiplicationUi(
+                    return Obx(()=>MultiplicationUi(
                       inputController: controller.inputControllers[index],
                       multiplicationNo: controller.uiUtils
                           .inputFormater(value: controller.list[index]),
@@ -125,7 +124,7 @@ class HomePageView extends GetView<HomePageController> {
                       onChanged: (value) {
                         controller.updateValue(value, index);
                       },
-                    );
+                    ));
                   },
                 ))
             )
