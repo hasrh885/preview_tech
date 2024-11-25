@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:denomination/db/storage.dart';
 import 'package:denomination/screen/history/model/model.dart';
+import 'package:denomination/screen/home_page/view/home_page_view.dart';
 import 'package:denomination/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
@@ -44,13 +45,6 @@ class HomePageController extends GetxController{
     showNewWidget.value = scrollOffset.value > 50.0;
   }
 
-  @override
-  void dispose() {
-    remarkController.value.clear();
-    // scrollControllerListView.value.dispose();
-    Get.delete<HomePageController>();
-    super.dispose();
-  }
 
   @override
   void onInit() {
@@ -62,11 +56,24 @@ class HomePageController extends GetxController{
     inputControllers.assignAll(List.generate(list.length, (index) => TextEditingController()));
     total.assignAll(List.generate(list.length, (index) => "0"));
   }
+
+  @override
   void onClose() {
     for (var controller in inputControllers) {
       controller.dispose();
     }
+    remarkController.value.clear();
+    scrollControllerListView.value.dispose();
+    Get.delete<HomePageController>();
     super.onClose();
+  }
+
+  @override
+  void dispose() {
+    remarkController.value.clear();
+    scrollControllerListView.value.dispose();
+    Get.delete<HomePageController>();
+    super.dispose();
   }
 
   clearAll(){
@@ -74,9 +81,7 @@ class HomePageController extends GetxController{
     total.clear();
     total.assignAll(List.generate(list.length, (index) => "0"));
 
-    for (int i = 0; i < inputControllers.length; i++) {
-      inputControllers[i].text = "";
-    }
+    inputControllers.assignAll(List.generate(list.length, (index) => TextEditingController()));
 
     remarkController.value.clear();
     currentItem.value = "General 1";
@@ -162,7 +167,7 @@ class HomePageController extends GetxController{
     index.value = Get.arguments["index"];
     print(editData);
     // list.clear();
-    inputControllers.clear();
+    // inputControllers.clear();
     total.clear();
     totalSum.value = 0;
 
@@ -228,6 +233,7 @@ class HomePageController extends GetxController{
 
       clearAll();
     }
+    Get.offAll(()=>HomePageView());
   }
 
 

@@ -296,7 +296,7 @@ class HomePageView extends GetView<HomePageController> {
                     icon: Icons.history,
                     text: 'History',
                     onTap: () {
-                      Get.offAll(() => HistoryView());
+                      Get.to(() => HistoryView());
                     },
                   ),
                 ],
