@@ -11,7 +11,7 @@ class HomePageController extends GetxController{
 
   final UiUtils uiUtils = UiUtils();
   final Storage storage = Storage();
-  final key = GlobalKey<ExpandableFabState>();
+  // final GlobalKey<ExpandableFabState> fabKey = GlobalKey<ExpandableFabState>();
 
   RxList list = [2000, 500, 200, 100, 50, 20, 10, 5, 2, 1].obs;
   RxList<TextEditingController> inputControllers = <TextEditingController>[].obs;
@@ -20,17 +20,42 @@ class HomePageController extends GetxController{
   RxList<String> total = <String>[].obs;
 
   RxInt totalSum = 0.obs;
-  final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   Rx<TextEditingController> remarkController = TextEditingController().obs;
   RxList<String> items = ["General 1", "General 2", "General 3", "General 4"].obs;
   RxString currentItem = "General 1".obs;
 
+  RxBool updateDataValue = false.obs;
+
+  ///Animation
+  Rx<ScrollController> scrollControllerListView = ScrollController().obs;
+  Rx<ScrollController> scrollControllerListViewBuilder = ScrollController().obs;
+
+  RxDouble scrollOffset = 0.0.obs;
+  RxBool showNewWidget = false.obs;
+  RxBool listViewBuilderScrollingStart = false.obs;
+
+  animation(){
+    scrollControllerListView.value.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    scrollOffset.value = scrollControllerListView.value.offset;
+    showNewWidget.value = scrollOffset.value > 50.0;
+  }
+
+  @override
+  void dispose() {
+    remarkController.value.clear();
+    // scrollControllerListView.value.dispose();
+    Get.delete<HomePageController>();
+    super.dispose();
+  }
 
   @override
   void onInit() {
     super.onInit();
-
+    animation();
     totalSum.value = 0;
     inputControllers.clear();
     total.clear();
@@ -53,6 +78,9 @@ class HomePageController extends GetxController{
       inputControllers[i].text = "";
     }
 
+    remarkController.value.clear();
+    currentItem.value = "General 1";
+    updateDataValue.value = false;
   }
 
 
@@ -81,6 +109,10 @@ class HomePageController extends GetxController{
     });
     print(total);
     print(totalSum.value);
+    update();
+  }
+  changeDropDownValue(value){
+    currentItem.value = value;
     update();
   }
 
@@ -113,6 +145,8 @@ class HomePageController extends GetxController{
       'total': total,
       'totalSum': totalSum.value,
       'date_time': DateTime.now().toIso8601String(),
+      'file_name' : "${currentItem.value}",
+      'remark' : "${remarkController.value.text}"
     };
     // Insert the new data at the beginning of the list (first position)
     body.insert(0, newData);
@@ -122,14 +156,10 @@ class HomePageController extends GetxController{
     clearAll();
   }
 
-  changeDropDownValue(value){
-    currentItem.value = value;
-    update();
-  }
-
-
   editCalculation(){
+    updateDataValue.value = true;
     ReadModel editData = ReadModel.fromJson(jsonDecode(Get.arguments["data"]));
+    index.value = Get.arguments["index"];
     print(editData);
     // list.clear();
     inputControllers.clear();
@@ -150,10 +180,56 @@ class HomePageController extends GetxController{
     }
     totalSum.value = editData.totalSum!;
 
+    remarkController.value.text = editData.remark!;
+
+    changeDropDownValue(editData.fileName!);
+
     print(totalSum);
     print(total);
     print(inputControllers);
     update();
   }
+
+
+  RxInt index = 0.obs;
+  Future<void> updateData() async {
+    RxList<ReadModel> readData = <ReadModel>[].obs;
+
+    // Read the existing data from storage
+    var jsonData = await storage.read(key: "list");
+
+    if (jsonData != null) {
+      var data = jsonDecode(jsonData);
+      if (data is List) {
+        readData.value = List<ReadModel>.from(
+          data.map((item) => ReadModel.fromJson(item)),
+        );
+      }
+    }
+
+    if (index >= 0 && index < readData.length) {
+
+      readData[index.value] = ReadModel(
+        list: list,
+        inputControllers: inputControllersText,
+        total: total,
+        totalSum: totalSum.value,
+        dateTime: DateTime.now().toIso8601String(),
+        fileName: currentItem.value,
+        remark: remarkController.value.text,
+      );
+
+
+      await storage.save(
+        key: "list",
+        value: jsonEncode(readData.map((item) => item.toJson()).toList()),
+      );
+
+
+      clearAll();
+    }
+  }
+
+
 
 }

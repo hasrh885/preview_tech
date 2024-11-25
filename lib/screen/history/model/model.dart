@@ -14,6 +14,8 @@ class ReadModel {
   List<dynamic>? total;
   int? totalSum;
   String? dateTime;
+  String? fileName;
+  String? remark;
 
   ReadModel({
     this.list,
@@ -21,6 +23,8 @@ class ReadModel {
     this.total,
     this.totalSum,
     this.dateTime,
+    this.fileName,
+    this.remark
   });
 
   factory ReadModel.fromJson(Map<String, dynamic> json) => ReadModel(
@@ -29,6 +33,8 @@ class ReadModel {
     total: json["total"] == null ? [] : List<dynamic>.from(json["total"]!.map((x) => x)),
     totalSum: json["totalSum"],
     dateTime: json["date_time"],
+    fileName: json["file_name"],
+    remark: json["remark"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -37,5 +43,7 @@ class ReadModel {
     "total": total == null ? [] : List<dynamic>.from(total!.map((x) => x)),
     "totalSum": totalSum,
     "date_time": dateTime,
+    "file_name" : fileName,
+    "remark" : remark,
   };
 }

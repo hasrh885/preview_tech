@@ -2,6 +2,7 @@ import 'package:denomination/component/custom_dropdown.dart';
 import 'package:denomination/component/custom_popup_menu_button.dart';
 import 'package:denomination/component/custom_text_form_field.dart';
 import 'package:denomination/component/multiplication_ui.dart';
+import 'package:denomination/resources/assets.dart';
 import 'package:denomination/resources/color.dart';
 import 'package:denomination/screen/history/view/history_view.dart';
 import 'package:denomination/screen/home_page/comtroller/home_page_controller.dart';
@@ -13,127 +14,99 @@ class HomePageView extends GetView<HomePageController> {
   HomePageView({Key? key}) : super(key: key);
 
   final HomePageController homePageController = Get.put(HomePageController());
+  final GlobalKey<ExpandableFabState> fabKey = GlobalKey<ExpandableFabState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Obx(
-              () => Stack(
-                children: [
-                  Image.asset('assets/images/currency_banner.jpg'),
-                  Align(
-                      alignment: Alignment.topRight,
-                      child: CustomPopupMenuButton(
-                        items: [
-                          CustomPopupMenuItem(
-                            icon: Icons.history,
-                            text: 'History',
-                            onTap: () {
-                              Get.to(() => HistoryView());
-                            },
-                          ),
-                        ],
-                      )).marginOnly(top: 80),
-                  controller.totalSum == 0
-                      ? Positioned(
-                          bottom: 15,
-                          left: 5,
-                          child: Text(
-                            "Denomination",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 30,
-                                fontWeight: FontWeight.w400),
-                          ))
-                      : SizedBox.shrink(),
-                  Obx(() => controller.totalSum.value != 0
-                        ? Positioned(
-                            bottom: 15,
-                            left: 5,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Total Amount",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                                Text(
-                                  "₹ ${controller.uiUtils.inputFormater(value: controller.totalSum.value)}",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                                Text(
-                                  "${controller.uiUtils.convertNumberToWords(controller.totalSum.value)} only/-",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w400),
-                                )
-                              ],
-                            ).marginOnly(left: 8))
-                        : SizedBox.shrink(),
+    return SafeArea(
+        child:
+        Scaffold(
+      body: Column(
+        children: [
+          AnimatedSwitcher(
+              duration: const Duration(milliseconds: 800),
+              // Duration for smoother transition
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: animation.drive(Tween(begin: 0.8, end: 1.0)),
+                    child: child,
                   ),
-                ],
-              ),
+                );
+              },
+              child: Obx(
+                () =>
+                    controller.showNewWidget.value ? newWidget() : oldWidget(),
+              )),
+          Expanded(
+            child: ListView(
+              controller: controller.scrollControllerListView.value,
+              physics: controller.listViewBuilderScrollingStart == false
+                  ? const AlwaysScrollableScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
+              children: [
+                Container(
+                    alignment: Alignment.topLeft,
+                    color: Colors.black,
+                    height: MediaQuery.sizeOf(context).height,
+                    child: Obx(() => ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: controller.list.length,
+                          shrinkWrap: true,
+                          controller:
+                              controller.scrollControllerListViewBuilder.value,
+                          physics:
+                              controller.listViewBuilderScrollingStart.value ==
+                                      true
+                                  ? const AlwaysScrollableScrollPhysics()
+                                  : const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return Obx(() => MultiplicationUi(
+                                  inputController:
+                                      controller.inputControllers[index],
+                                  multiplicationNo: controller.uiUtils
+                                      .inputFormater(
+                                          value: controller.list[index]),
+                                  total: controller.total[index],
+                                  suffix: controller.inputControllers[index]
+                                              .value.text !=
+                                          ""
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            controller.clearInput(index);
+                                            controller.total[index] = "0";
+                                            controller.totalSumValue();
+                                          },
+                                          child: Container(
+                                            width: 20.0,
+                                            height: 20.0,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: white,
+                                            ),
+                                            child: Icon(
+                                              Icons.close_outlined,
+                                              color: black,
+                                              size: 18.0,
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox.shrink(),
+                                  onChanged: (value) {
+                                    controller.updateValue(value, index);
+                                  },
+                                ));
+                          },
+                        )))
+              ],
             ),
-            Container(
-                alignment: Alignment.topLeft,
-                color: Colors.black,
-                height: MediaQuery.sizeOf(context).height,
-                child: Obx(() => ListView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: controller.list.length,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return Obx(()=>MultiplicationUi(
-                      inputController: controller.inputControllers[index],
-                      multiplicationNo: controller.uiUtils
-                          .inputFormater(value: controller.list[index]),
-                      total: controller.total[index],
-                      suffix: controller.inputControllers[index].value.text != ""
-                          ? GestureDetector(
-                        onTap: () {
-                          controller.clearInput(index);
-                          controller.total[index] = "0";
-                          controller.totalSumValue();
-                        },
-                        child: Container(
-                          width: 20.0,
-                          height: 20.0,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: white,
-                          ),
-                          child: Icon(
-                            Icons.close_outlined,
-                            color: black,
-                            size: 18.0,
-                          ),
-                        ),
-                      )
-                          : SizedBox.shrink(),
-                      onChanged: (value) {
-                        controller.updateValue(value, index);
-                      },
-                    ));
-                  },
-                ))
-            )
-          ],
-        ),
+          )
+        ],
       ),
       floatingActionButtonLocation: ExpandableFab.location,
       floatingActionButton: ExpandableFab(
-        key: controller.key,
+        key: fabKey,
         type: ExpandableFabType.up,
         childrenAnimation: ExpandableFabAnimation.none,
         distance: 70,
@@ -158,7 +131,7 @@ class HomePageView extends GetView<HomePageController> {
           floatingActionButton(
               onPressed: () {
                 controller.clearAll();
-                final state = controller.key.currentState;
+                final state = fabKey.currentState;
                 if (state != null) {
                   state.toggle();
                 }
@@ -168,8 +141,8 @@ class HomePageView extends GetView<HomePageController> {
               icon: Icons.refresh_outlined),
           floatingActionButton(
               onPressed: () {
-                showFullWidthDialog(context);
-                final state = controller.key.currentState;
+                showDialogBox(context);
+                final state = fabKey.currentState;
                 if (state != null) {
                   state.toggle();
                 }
@@ -179,7 +152,7 @@ class HomePageView extends GetView<HomePageController> {
               icon: Icons.save_alt_outlined),
         ],
       ),
-    );
+    ));
   }
 
   Widget floatingActionButton(
@@ -213,7 +186,7 @@ class HomePageView extends GetView<HomePageController> {
     );
   }
 
-  void showFullWidthDialog(BuildContext context) {
+  void showDialogBox(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -231,11 +204,15 @@ class HomePageView extends GetView<HomePageController> {
               children: [
                 Align(
                   alignment: Alignment.topRight,
-                  child: Icon(
-                    Icons.close,
-                    color: Colors.red,
-                    size: 35,
-                  ).marginOnly(bottom: 8),
+                  child: IconButton(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      icon: Icon(
+                        Icons.close,
+                        color: Colors.red,
+                        size: 35,
+                      )).marginOnly(bottom: 8),
                 ),
                 leaveDropdown(
                   context: context,
@@ -248,10 +225,14 @@ class HomePageView extends GetView<HomePageController> {
                 ),
                 CustomTextFormField(
                   maxLines: 4,
-                  controller: controller.remarkController.value, hintText: "Fill your remark(If any)",).marginSymmetric(vertical: 8),
+                  controller: controller.remarkController.value,
+                  hintText: "Fill your remark(If any)",
+                ).marginSymmetric(vertical: 8),
                 ElevatedButton(
                   onPressed: () {
-                    controller.storeData();
+                    controller.updateDataValue.value == false
+                        ? controller.storeData()
+                        : controller.updateData();
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
@@ -259,10 +240,14 @@ class HomePageView extends GetView<HomePageController> {
                     backgroundColor: grey, // Change text color
                     side: BorderSide(width: 0), // Change border color and width
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Change border radius for rounded corners
+                      borderRadius: BorderRadius.circular(
+                          12), // Change border radius for rounded corners
                     ),
                   ),
-                  child: Text('Save', style: TextStyle(color: white),).paddingSymmetric(vertical: 8,horizontal: 4),
+                  child: Text(
+                    'Save',
+                    style: TextStyle(color: white),
+                  ).paddingSymmetric(vertical: 8, horizontal: 4),
                 ),
               ],
             ),
@@ -272,12 +257,13 @@ class HomePageView extends GetView<HomePageController> {
     );
   }
 
-  Widget leaveDropdown(
-      {required BuildContext context,
-      required String hintName,
-      required ValueChanged itemCallBack,
-      required final List<String> items,
-      dynamic currentItem,}) {
+  Widget leaveDropdown({
+    required BuildContext context,
+    required String hintName,
+    required ValueChanged itemCallBack,
+    required final List<String> items,
+    dynamic currentItem,
+  }) {
     return DropdownWidget(
       titleWidget: IntrinsicWidth(
         child: Text(hintName, style: const TextStyle(fontSize: 12)),
@@ -287,6 +273,130 @@ class HomePageView extends GetView<HomePageController> {
       currentItem: currentItem,
       itemCallBack: itemCallBack,
       items: items,
+    );
+  }
+
+  Widget oldWidget() {
+    return Obx(
+      () => Stack(
+        children: [
+          SizedBox(
+            height: 150,
+            width: Get.width,
+            child: Image.asset(
+              Assets().homePageCurrencyBanner,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Align(
+              alignment: Alignment.topRight,
+              child: CustomPopupMenuButton(
+                items: [
+                  CustomPopupMenuItem(
+                    icon: Icons.history,
+                    text: 'History',
+                    onTap: () {
+                      Get.offAll(() => HistoryView());
+                    },
+                  ),
+                ],
+              )).marginOnly(top: 25),
+          controller.totalSum == 0
+              ? Positioned(
+                  bottom: 15,
+                  left: 5,
+                  child: Text(
+                    "Denomination",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w400),
+                  ))
+              : SizedBox.shrink(),
+          Obx(
+            () => controller.totalSum.value != 0
+                ? Positioned(
+                    bottom: 15,
+                    left: 5,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Total Amount",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w400),
+                        ),
+                        Text(
+                          "₹ ${controller.uiUtils.inputFormater(value: controller.totalSum.value)}",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w400),
+                        ),
+                        SizedBox(
+                          width: Get.width,
+                          child: Text(
+                          "${controller.uiUtils.convertNumberToWords(controller.totalSum.value)} only/-",
+                          maxLines: 5,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400),
+                        ).marginOnly(right: 28),)
+                      ],
+                    ).marginOnly(left: 8))
+                : SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget newWidget() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      width: Get.width,
+      color: ebonyClay,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Total Amount",
+            style: TextStyle(color: white, fontSize: 16),
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+            Text(
+              "₹ ${controller.uiUtils.inputFormater(value: controller.totalSum.value)}",
+              style: TextStyle(color: white, fontSize: 16),
+            ),
+              CustomPopupMenuButton(
+                items: [
+                  CustomPopupMenuItem(
+                    icon: Icons.history,
+                    text: 'History',
+                    onTap: () {
+                      Get.to(() => HistoryView());
+                    },
+                  ),
+                ],
+              )
+          ],),
+          Text(
+            controller.totalSum.value == 0
+                ? controller.uiUtils.convertNumberToWords(0)
+                : "${controller.uiUtils.convertNumberToWords(controller.totalSum.value)} only/-",
+            maxLines: 2,
+            style: TextStyle(color: white, fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 }

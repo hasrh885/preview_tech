@@ -34,7 +34,6 @@ class HistoryController extends GetxController{
         update();
       }
     }
-    print(readData[0].dateTime);
     update();
   }
 
@@ -45,7 +44,7 @@ class HistoryController extends GetxController{
 
   edit({required int index}){
     HomePageController homePageController = Get.put(HomePageController());
-    Get.to(()=> HomePageView(), arguments: {"data": jsonEncode(readData[index])});
+    Get.offAll(()=> HomePageView(), arguments: {"data": jsonEncode(readData[index]), "index": index});
     homePageController.editCalculation();
   }
 

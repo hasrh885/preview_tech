@@ -56,7 +56,7 @@ class MultiplicationUi extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                    LengthLimitingTextInputFormatter(1),
+                    LengthLimitingTextInputFormatter(12),
                   ],
                   suffix: suffix,
                 ),
@@ -67,19 +67,22 @@ class MultiplicationUi extends StatelessWidget {
         Expanded(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 "=",
                 style: TextStyle(color: Colors.white, fontSize: 22),
               ),
-              Text(
-                "₹",
-                style: TextStyle(color: Colors.white, fontSize: 22),
-              ).marginSymmetric(horizontal: 4),
-              Text(
-                total,
-                style: TextStyle(color: Colors.white, fontSize: 22),
+              Container(
+                width: 100,
+                alignment: Alignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown, // Ensures text scales down but won't scale up
+                  child: Text(
+                    "₹ ${total}",
+                    style: TextStyle(color: Colors.white, fontSize: 22),
+                  ),
+                ),
               ),
             ],
           ),

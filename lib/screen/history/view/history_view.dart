@@ -12,28 +12,28 @@ class HistoryView extends GetView<HistoryController> {
   @override
   Widget build(BuildContext context) {
     controller.fetchData();
-    return Scaffold(
-      backgroundColor: black,
-      appBar: AppBar(
+    return SafeArea(child: Scaffold(
         backgroundColor: black,
-        iconTheme: IconThemeData(color: white),
-        title: Text(
-          "History",
-          style: TextStyle(color: white, fontSize: 22),
+        appBar: AppBar(
+          backgroundColor: black,
+          iconTheme: IconThemeData(color: white),
+          title: Text(
+            "History",
+            style: TextStyle(color: white, fontSize: 22),
+          ),
         ),
-      ),
-      body: CustomSlidAbleList(
-        readData: controller.readData,
-        onPressedDelete: (index) {
-          controller.delete(index: index);
-        },
-        onPressedEdit: (index) {
-          controller.edit(index: index);
-        },
-        onPressedShare: (index) {
-          controller.shareData(index: index);
-        },
-      ),
-    );
+        body: Obx(()=>controller.readData.isNotEmpty ? CustomSlidAbleList(
+          readData: controller.readData,
+          onPressedDelete: (index) {
+            controller.delete(index: index);
+          },
+          onPressedEdit: (index) {
+            controller.edit(index: index);
+          },
+          onPressedShare: (index) {
+            controller.shareData(index: index);
+          },
+        ) : Center(child: Text("No Data", style: TextStyle(color: white, fontSize: 22),),),)
+    ));
   }
 }

@@ -101,7 +101,7 @@ class CustomSlidAbleList extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        "Remark",
+                        readData[index].fileName!,
                         style: TextStyle(color: lightBlue, fontSize: 12),
                       ),
                     ],
